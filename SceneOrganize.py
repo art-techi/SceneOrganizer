@@ -39,6 +39,7 @@ class CreateWindow(object):
         column = cmds.columnLayout(rowSpacing=10)
 
         cmds.text(label="Rename: adds object type to end of name. (ie. sphere -> sphere_geo")
+        cmds.text(label="Select an object in the outliner to rename. If nothing is selected, it will rename all objects.")
         cmds.text(label="Organize: reorders outliner by object type")
         cmds.text(label="Group: groups objects of the same type")
         # set space to put buttons on the same row
@@ -53,7 +54,7 @@ class CreateWindow(object):
         cmds.deleteUI(self.windowName)
 
     def rename(self, *args):
-        print "STARTING"
+        print "Starting rename."
 
         # use selection, fall back to all scene objects
         getObj = cmds.ls(selection=True, long=True, objectsOnly=True)
@@ -65,9 +66,13 @@ class CreateWindow(object):
             print "Error. Nothing selected."
             return
 
-        print "objects: ", getObj
+        #print "objects: ", getObj
 
+        # need to set order to shortest name last otherwise it will rename the object's shape before
+        # the object itself
         getObj.sort(key=len, reverse=True)
+
+        #print "objects ordered: ", getObj
 
         # run through selections
         for obj in getObj:
@@ -79,15 +84,22 @@ class CreateWindow(object):
                 objType = cmds.objectType(obj)
 
             if objType == 'mesh':
-                suffix = 'geo'
+                suffix = '_geo'
+            elif objType == 'camera':
+                suffix = '_cam'
+            elif 'light' in objType.lower():
+                suffix = '_light'
             else:
                 continue
 
             # set new name
             shortName = obj.split('|')[-1]
-            newName = shortName + '_' + suffix
+            newName = shortName + suffix
             print shortName, '->', newName
-            cmds.rename(obj, newName)
+            try:
+                cmds.rename(obj, newName)
+            except RuntimeError:
+                print 'Renaming ' + obj + " failed."
 
     def reorderItems(self, *args):
         pass

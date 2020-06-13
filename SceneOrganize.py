@@ -63,7 +63,7 @@ class CreateWindow(object):
 
         # check if selection made
         if len(getObj) == 0:
-            print "Error. Nothing selected."
+            print "Error. Nothing in scene."
             return
 
         #print "objects: ", getObj
